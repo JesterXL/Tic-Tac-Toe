@@ -9,3 +9,5 @@ part "views/PieceX.dart";
 part "views/TicTacToeBoard.dart";
 
 part "models/GameModel.dart";
+
+part "controllers/GameBoardController.dart";

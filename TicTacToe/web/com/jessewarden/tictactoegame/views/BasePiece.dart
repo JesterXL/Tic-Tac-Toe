@@ -8,4 +8,6 @@ abstract class BasePiece
   {
     context.drawImage(image, p.x, p.y);
   }
+  
+  
 }
