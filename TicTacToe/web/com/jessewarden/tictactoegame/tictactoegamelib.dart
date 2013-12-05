@@ -1,6 +1,7 @@
 library tictactoegame;
 
 import "dart:html";
+import 'dart:async';
 
 part "views/BasePiece.dart";
 part "views/PieceO.dart";
