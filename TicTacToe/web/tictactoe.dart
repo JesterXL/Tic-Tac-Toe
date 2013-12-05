@@ -1,5 +1,6 @@
 import 'dart:html';
 import 'dart:async';
+import 'com/jessewarden/tictactoegame/tictactoegamelib.dart';
 
 CanvasElement canvas;
 List<PieceX> xPieces;
@@ -35,9 +36,6 @@ void main()
         {
           drawBoardAndPieces();
         });
-//    .catchError((Error error)
-//        print("loader error:" + error);
-//    ));
  
 }
 
@@ -47,39 +45,3 @@ void drawBoardAndPieces()
   board.draw(canvas.context2D, new Point(0, 0));
 }
 
-abstract class BasePiece
-{
-  ImageElement image = new ImageElement();
-  
-  void draw(CanvasRenderingContext2D context, Point p)
-  {
-    context.drawImage(image, p.x, p.y);
-  }
-}
-
-class TicTacToeBoard extends BasePiece
-{
-  Future loadImage()
-  {
-    image.src = "images/board.png";
-    return image.onLoad.first;
-  }  
-}
-
-class PieceX extends BasePiece
-{
-  Future loadImage()
-  {
-    image.src = "images/x.png";
-    return image.onLoad.first;
-  }
-}
-
-class PieceO extends BasePiece
-{
-  Future loadImage()
-  {
-    image.src = "images/o.png";
-    return image.onLoad.first;
-  }
-}
