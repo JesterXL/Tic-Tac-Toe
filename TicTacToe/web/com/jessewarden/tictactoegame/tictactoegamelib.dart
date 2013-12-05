@@ -2,6 +2,7 @@ library tictactoegame;
 
 import "dart:html";
 import 'dart:async';
+import 'dart:math';
 
 part "views/BasePiece.dart";
 part "views/PieceO.dart";

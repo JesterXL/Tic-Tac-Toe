@@ -50,7 +50,6 @@ class GameBoardController
   
   void onGameModelChanged(dynamic changeData)
   {
-    resetBoard();
     updateBoard(changeData);
   }
   
@@ -78,7 +77,10 @@ class GameBoardController
     col = col.floor();
     num row = y / SIZE;
     row = row.floor();
+    row = min(row, 2);
+    col = min(col, 2);
 //    print("x: $x, y: $y, row: $row, col: $col");
+    gameModel.setXAt(row, col);
   }
   
 }
