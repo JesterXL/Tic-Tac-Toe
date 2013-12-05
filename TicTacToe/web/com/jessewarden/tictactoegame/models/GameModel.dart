@@ -13,13 +13,12 @@ class GameModel extends Stream
   GameModel()
   {
     _controller = new StreamController(
-        onListen: _onListen,
         onPause: _onPause,
         onResume: _onResume,
         onCancel: _onCancel);
   }
   
-  StreamSubscription<String> listen(void onData(String line),
+  StreamSubscription listen(void onData(dynamic cell),
       { void onError(Error error),
     void onDone(),
     bool cancelOnError }) {
@@ -28,13 +27,6 @@ class GameModel extends Stream
                                      onDone: onDone,
                                      cancelOnError: cancelOnError);
     return _subscription;
-  }
-  
-  void _onListen()
-  {
-//    _subscription = listen(_onData,
-//                                   onError: _controller.addError,
-//                                   onDone: _onDone);
   }
   
   void _onCancel()

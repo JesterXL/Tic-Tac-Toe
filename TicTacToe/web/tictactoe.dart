@@ -39,8 +39,9 @@ void main()
           drawBoardAndPieces();
         });
  
-// model = new GameModel();
-// model.resetGame();
+ model = new GameModel();
+ model.resetGame();
+ model.listen(print);
 // model.listen((dynamic someData)
 //     {
 //       print("listen, someData:" + someData);
@@ -49,7 +50,7 @@ void main()
 //     {
 //        print("onDone");
 //     });
-//  model.setXAt(1, 2);
+  model.setXAt(1, 2);
   
 //  TestStream test = new TestStream();
 //  test.listen(print);
