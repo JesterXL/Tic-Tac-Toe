@@ -18,6 +18,9 @@ class GameModel extends Stream
         onCancel: _onCancel);
   }
   
+// ------------------------------------------------------------------------
+  // ------------------------------------------------------------------------
+  // Stream Impl
   StreamSubscription listen(void onData(dynamic cell),
       { void onError(Error error),
     void onDone(),
@@ -54,6 +57,8 @@ class GameModel extends Stream
   {
     _controller.close();
   }
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
   
   int _getCell(int row, int col)
   {
@@ -63,8 +68,73 @@ class GameModel extends Stream
   Stream _setCell(int row, int col, int value)
   {
     _mdarray[row][col] = value;
-    _controller.add({"row": row, "col": col, "value": value});
-    _controller.close();
+    dynamic matchResult = _calculateWin();
+    dynamic changeObject = {"row": row, 
+                            "col": col, 
+                            "value": value, 
+                            "match": matchResult["match"]};
+    _controller.add(changeObject);
+  }
+  
+  Object _calculateWin()
+  {
+    List d = _mdarray;
+    List firstRow       = d[0];
+    List secondRow      = d[1];
+    List thirdRow       = d[2];
+    List firstCol       = [d[0][0], d[1][0], d[2][0]];
+    List secondCol      = [d[0][1], d[1][1], d[2][1]];
+    List thirdCol       = [d[0][2], d[1][2], d[2][2]];
+    List downRight      = [d[0][0], d[1][1], d[2][2]];
+    List downLeft       = [d[0][2], d[1][1], d[2][0]];
+    List potentialWins  = [firstRow, secondRow, thirdRow,
+                          firstCol, secondCol, thirdCol,
+                          downRight, downLeft
+                          ];
+    
+    Object matchResult = _matchAtLeastOneList(potentialWins);
+    return matchResult;
+  }
+  
+  bool _matchList(List<int> list)
+  {
+    int lastItem = null;
+    bool match = list.every((int item)
+        {
+           if(lastItem != null)
+           {
+             if(item != BLANK && lastItem != BLANK)
+             {
+                return item == lastItem;
+             }
+             else
+             {
+               return false;
+             }
+           }
+           else
+           {
+             
+             lastItem = item;
+             return true;
+           }
+        });
+    return match;
+  }
+  
+  Object _matchAtLeastOneList(List<List<int>> lists)
+  {
+    int matchIndex = null;
+    bool match = lists.any((List<int> list)
+        {
+            bool aMatch = _matchList(list);
+            if(aMatch == true)
+            {
+              matchIndex = lists.indexOf(list);
+            }
+            return aMatch;
+        });
+    return {"match": match, "index": matchIndex};
   }
   
   void resetGame()
@@ -90,5 +160,6 @@ class GameModel extends Stream
   {
     _setCell(row, col, O);
   }
+  
   
 }
