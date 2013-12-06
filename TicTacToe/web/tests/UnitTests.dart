@@ -10,6 +10,7 @@ import '../com/jessewarden/statemachine/statemachinelib.dart';
 
 part 'TestStateMachine.dart';
 part 'TestGame.dart';
+part 'TestAIModel.dart';
 
 class UnitTests
 {
@@ -31,7 +32,8 @@ class UnitTests
 	void run()
 	{
 //		new	TestStateMachine().run();
-		new TestGame().run();
+//		new TestGame().run();
+		new TestAIModel().run();
 	}
 }
 

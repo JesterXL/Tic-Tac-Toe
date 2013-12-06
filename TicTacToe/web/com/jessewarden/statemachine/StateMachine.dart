@@ -16,7 +16,7 @@ class StateMachine extends Stream
 	StateMachine()
 	{
 		_states = new Map();
-		_controller = new StreamController.broadcast(onCancel: _onCancel);
+		_controller = new StreamController.broadcast(onCancel: _onCancel, sync: true);
 	}
 	
 	// ------------------------------------------------------------------------

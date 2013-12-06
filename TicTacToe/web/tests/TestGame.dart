@@ -52,6 +52,12 @@ class TestGame
 			expect(game.yIsWinner, false);
 		});
 		
+		test("no winning moves at beginning", ()
+		{
+			List<Map<String, int>> winningMoves = game.getWinningMoves();
+			expect(winningMoves.length, 0);
+		});
+		
 		
     });
   }

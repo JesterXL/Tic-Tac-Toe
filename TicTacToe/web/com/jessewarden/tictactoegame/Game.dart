@@ -2,11 +2,14 @@ part of tictactoegame;
 
 class Game
 {
+	static const int ROWS = 3;
+	static const int COLS = 3;
 	static const int BLANK = 0;
 	static const int X = 1;
 	static const int O = 2;
 	
 	List _mdarray;
+	List _memento;
 	
 	Game()
 	{
@@ -35,25 +38,30 @@ class Game
 		return matchResult["type"] != null && matchResult["type"] == X;
 	}
 	
-	bool get yIsWinner
+	bool get oIsWinner
 	{
 		dynamic matchResult = getMatchResults();
 		return matchResult["type"] != null && matchResult["type"] == O;
 	}
 	
-	int _getCell(int row, int col)
+	int getCell(int row, int col)
 	{
 		return _mdarray[row][col];
 	}
 	
 	Stream _setCell(int row, int col, int value)
 	{
+		assert(row != null);
+		assert(col != null);
+		assert(row <= ROWS);
+		assert(col <= COLS);
+		assert(_mdarray != null);
 		_mdarray[row][col] = value;
-		dynamic matchResult = getMatchResults();
-		dynamic changeObject = {"row": row, 
-	                        "col": col, 
-	                        "value": value, 
-	                        "match": matchResult["match"]};
+//		dynamic matchResult = getMatchResults();
+//		dynamic changeObject = {"row": row, 
+//	                        "col": col, 
+//	                        "value": value, 
+//	                        "match": matchResult["match"]};
 	}
 	
 	dynamic getMatchResults()
@@ -83,6 +91,37 @@ class Game
 			 [0, 0, 0],
 			 [0, 0, 0]
 		 ];
+	 }
+	 
+	 Game clone()
+	 {
+	 	Game clonedGame = new Game();
+	 	clonedGame._mdarray = _mdarray;
+	 	return clonedGame;
+	 }
+	 
+	 void storeMemento()
+	 { 
+		 _memento = [
+			 [0, 0, 0],
+			 [0, 0, 0],
+			 [0, 0, 0]
+		 ];
+		 
+		 // [jwarden 12.6.2013] TODO: optimize later
+		 for(var r=0; r<ROWS; r++)
+		 {
+		 	for(var c=0; c<COLS; c++)
+		 	{
+		 		_memento[r][c] = _mdarray[r][c];
+		 	}
+		 }
+	 }
+	 
+	 void resetToMemento()
+	 {
+	 	_mdarray = _memento;
+	 	_memento = null;
 	 }
 	 
 	void setBlankAt(int row, int col)
@@ -140,6 +179,41 @@ class Game
 			return aMatch;
 		});
 		return {"match": match, "index": matchIndex, "type": lastType};
+	}
+	
+	List<Map<String, int>> getWinningMoves(int forType)
+	{
+		storeMemento();
+		List<Map<String, int>> winningMoves = [];
+		for(var r=0; r<ROWS; r++)
+		{
+			for(var c=0; c<COLS; c++)
+			{
+				if(getCell(r, c) == BLANK)
+				{
+					setXAt(r, c);
+					if(forType == X)
+					{
+						if(xIsWinner)
+						{
+							winningMoves.add({"row": r, "col": c});
+						}
+					}
+					else if(forType == O)
+					{
+						if(oIsWinner)
+						{
+							winningMoves.add({"row": r, "col": c});
+						}
+					}
+					
+				
+					resetToMemento();
+					storeMemento();
+				}
+			}
+		}
+		return winningMoves;
 	}
 	
 }

@@ -21,38 +21,38 @@ class AIModel extends Stream
 	
 	void onStateChange(StateMachineEvent event)
 	{
-		print("AIModel::onStateChange");
-		print(event);
 		if(event.toState == "thinking")
 		{
 			calculateNextMove();
 		}
 	}
 	
-	void calculateNextMove()
+	bool calculateNextMove()
 	{
-		if(gameModel.isBlank)
+		Game game = gameModel.game;
+		if(game.isBlank)
 		{
 			// always start in middle
-			gameModel.setXAt(1, 1);
+			game.setXAt(1, 1);
+			return true;
 		}
 		else
 		{
 			// otherwise, gotta plan
-			List d = gameModel.mdarray;
+			List d = game.mdarray;
 			List firstRow       = d[0];
 			List secondRow      = d[1];
 			List thirdRow       = d[2];
-			List firstCol       = [d[0][0], d[1][0], d[2][0]];
-			List secondCol      = [d[0][1], d[1][1], d[2][1]];
-			List thirdCol       = [d[0][2], d[1][2], d[2][2]];
-			List downRight      = [d[0][0], d[1][1], d[2][2]];
-			List downLeft       = [d[0][2], d[1][1], d[2][0]];
-			List potentialWins  = [firstRow, secondRow, thirdRow,
-									firstCol, secondCol, thirdCol,
-									downRight, downLeft
-									];
-			
+//			List firstCol       = [d[0][0], d[1][0], d[2][0]];
+//			List secondCol      = [d[0][1], d[1][1], d[2][1]];
+//			List thirdCol       = [d[0][2], d[1][2], d[2][2]];
+//			List downRight      = [d[0][0], d[1][1], d[2][2]];
+//			List downLeft       = [d[0][2], d[1][1], d[2][0]];
+//			List potentialWins  = [firstRow, secondRow, thirdRow,
+//									firstCol, secondCol, thirdCol,
+//									downRight, downLeft
+//									];
+//			
 			int r_1_c_1 = firstRow[0];
 			int r_1_c_2 = firstRow[1];
 			int r_1_c_3 = firstRow[2];
@@ -66,12 +66,65 @@ class AIModel extends Stream
 								r_2_c_1, r_2_c_2, r_2_c_3,
 								r_3_c_1, r_3_c_2, r_3_c_3];
 			
-			const int BLANK = GameModel.BLANK;
-			const int X = GameModel.X;
-			const int O = GameModel.O;
+			const int BLANK = Game.BLANK;
+			const int X = Game.X;
+			const int O = Game.O;
 			
-			// Run through scenarios brute force style.
-			List winningMoves = [];
+			// Can I make any winning moves?
+			List<Map<String, int>> winningMoves = game.getWinningMoves(X);
+			if(winningMoves.length > 0)
+			{
+				// then take it
+				Map<String, int> finishingMove = winningMoves[0];
+				game.setXAt(finishingMove["row"], finishingMove["col"]);
+				return true;
+			}
+			
+			// no winning moves, find next move instead. Let's check for edges...
+			if(r_2_c_1 == O && game.getCell(2, 2) == BLANK)
+			{
+				game.setXAt(2, 2);
+				return true;
+			}
+			else if(r_1_c_2 == O && game.getCell(2, 0) == BLANK)
+			{
+				game.setXAt(2, 0);
+				return true;
+			}
+			else if(r_2_c_3 == O && game.getCell(0, 0) == BLANK)
+			{
+				game.setXAt(0, 0);
+				return true;
+			}
+			else if(r_3_c_2 == O && game.getCell(0, 2) == BLANK)
+			{
+				game.setXAt(0, 2);
+				return true;
+			}
+			
+			// no edges? Let's check for corners...
+			if(r_3_c_1 == O && game.getCell(0, 2) == BLANK)
+			{
+				game.setXAt(0, 2);
+				return true;
+			}
+			else if(r_1_c_1 == O && game.getCell(2, 2) == BLANK)
+			{
+				game.setXAt(2, 2);
+				return true;
+			}
+			else if(r_1_c_3 == O && game.getCell(2, 0) == BLANK)
+			{
+				game.setXAt(2, 0);
+				return true;
+			}
+			else if(r_3_c_3 == O && game.getCell(0, 0) == BLANK)
+			{
+				game.setXAt(0, 0);
+				return true;
+			}
+			
+			return false;
 			
 		}
 		
@@ -79,6 +132,7 @@ class AIModel extends Stream
 	
 		
 	}
+	
 	
 	// ------------------------------------------------------------------------
 	// ------------------------------------------------------------------------
