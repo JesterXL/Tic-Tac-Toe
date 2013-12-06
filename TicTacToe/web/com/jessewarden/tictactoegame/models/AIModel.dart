@@ -32,7 +32,15 @@ class AIModel extends Stream
 //			{
 //				print("AIModel failed to calculateNextMove, an error in the algorithm occured (imagine that...), error: $error");
 //			}
-			calculateNextMove();
+			bool result = calculateNextMove();
+			if(result == true)
+			{
+				print("AI successfully made a move.");
+			}
+			else
+			{
+				print("AI failed to make a move...");
+			}
 			_controller.add(new AIModelEvent(AIModelEvent.AI_MOVE_COMPLETED));
 		}
 	}
@@ -101,52 +109,159 @@ class AIModel extends Stream
 			}
 			
 			// no winning moves, find next move instead. Let's check for edges...
-			if(r_2_c_1 == O && game.getCell(2, 2) == BLANK)
+			if(r_2_c_1 == O)
 			{
-				game.setXAt(2, 2);
-				return true;
+				if(game.getCell(2, 2) == BLANK)
+				{
+					game.setXAt(2, 2);
+					return true;
+				}
+				else if(game.getCell(0, 2) == BLANK)
+				{
+					game.setXAt(0, 2);
+					return true;
+				}
 			}
-			else if(r_1_c_2 == O && game.getCell(2, 0) == BLANK)
+			else if(r_1_c_2 == O)
 			{
-				game.setXAt(2, 0);
-				return true;
+				if(game.getCell(2, 0) == BLANK)
+				{
+					game.setXAt(2, 0);
+					return true;
+				}
+				else if(game.getCell(2, 2) == BLANK)
+				{
+					game.setXAt(2, 2);
+					return true;
+				}
 			}
-			else if(r_2_c_3 == O && game.getCell(0, 0) == BLANK)
+			else if(r_2_c_3 == O)
 			{
-				game.setXAt(0, 0);
-				return true;
+				if(game.getCell(0, 0) == BLANK)
+				{
+					game.setXAt(0, 0);
+					return true;
+				}
+				else if(game.getCell(2, 0) == BLANK)
+				{
+					game.setXAt(2, 0);
+					return true;
+				}
 			}
-			else if(r_3_c_2 == O && game.getCell(0, 2) == BLANK)
+			else if(r_3_c_2 == O)
 			{
-				game.setXAt(0, 2);
-				return true;
+				if(game.getCell(0, 2) == BLANK)
+				{
+					game.setXAt(0, 2);
+					return true;
+				}
+				else if(game.getCell(0, 0) == BLANK)
+				{
+					game.setXAt(0, 0);
+					return true;
+				}
 			}
 			
 			// no edges? Let's check for corners...
-			if(r_3_c_1 == O && game.getCell(0, 2) == BLANK)
+			if(r_3_c_1 == O)
 			{
-				game.setXAt(0, 2);
-				return true;
+				if(game.getCell(0, 2) == BLANK)
+				{
+					game.setXAt(0, 2);
+					return true;
+				}
+				else if(game.getCell(2, 2) == BLANK)
+				{
+					game.setXAt(2, 2);
+					return true;
+				}
+				else if(game.getCell(0, 0) == BLANK)
+				{
+					game.setXAt(0, 0);
+					return true;
+				}
 			}
-			else if(r_1_c_1 == O && game.getCell(2, 2) == BLANK)
+			else if(r_1_c_1 == O)
 			{
-				game.setXAt(2, 2);
-				return true;
+				if(game.getCell(2, 2) == BLANK)
+				{
+					game.setXAt(2, 2);
+					return true;
+				}
+				else if(game.getCell(0, 2) == BLANK)
+				{
+					game.setXAt(0, 2);
+					return true;
+				}
+				else if(game.getCell(2, 0) == BLANK)
+				{
+					game.setXAt(2, 0);
+					return true;
+				}
 			}
-			else if(r_1_c_3 == O && game.getCell(2, 0) == BLANK)
+			else if(r_1_c_3 == O)
 			{
-				game.setXAt(2, 0);
-				return true;
+				if(game.getCell(2, 0) == BLANK)
+				{
+					game.setXAt(2, 0);
+					return true;
+				}
+				else if(game.getCell(0, 0) == BLANK)
+				{
+					game.setXAt(0, 0);
+					return true;
+				}
+				else if(game.getCell(2, 2) == BLANK)
+				{
+					game.setXAt(2, 2);
+					return true;
+				}
 			}
-			else if(r_3_c_3 == O && game.getCell(0, 0) == BLANK)
+			else if(r_3_c_3 == O)
 			{
-				game.setXAt(0, 0);
+				if(game.getCell(0, 0) == BLANK)
+				{
+					game.setXAt(0, 0);
+					return true;
+				}
+				else if(game.getCell(0, 2) == BLANK)
+				{
+					game.setXAt(0, 2);
+					return true;
+				}
+				else if(game.getCell(2, 0) == BLANK)
+				{
+					game.setXAt(2, 0);
+					return true;
+				}
+			}
+			
+			// made it this far? oy vey, my algorithm needs work, find an open spot
+			List<int> openSpot = findOpenSpot(game);
+			if(openSpot.length > 0)
+			{
+				game.setXAt(openSpot[0], openSpot[1]);
 				return true;
 			}
 			
 			return false;
 			
 		}
+	}
+	
+	List<int> findOpenSpot(Game game)
+	{
+		for(var r=0; r<Game.ROWS; r++)
+		{
+			for(var c=0; c<Game.COLS; c++)
+			{
+				if(game.getCell(r, c) == Game.BLANK)
+				{
+					return [r, c];
+				}
+			}
+		}
+		return [];
 	}
 	
 	List<Map<String, int>> getWinningMoves(int forType)

@@ -105,7 +105,8 @@ class GameBoardController
 		row	= row.floor();
 		row	= min(row,	2);
 		col	= min(col,	2);
-//		print("x:	$x,	y:	$y,	row:	$row,	col:	$col");
+		print("x:	$x,	y:	$y,	row:	$row,	col:	$col");
+		print(gameModel.game.mdarray[0]);
 		if(gameModel.game.getCell(row, col) == Game.BLANK)
 		{
 			gameModel.game.setOAt(row, col);

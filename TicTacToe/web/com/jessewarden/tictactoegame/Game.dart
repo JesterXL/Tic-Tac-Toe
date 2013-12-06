@@ -112,7 +112,18 @@ class Game
 	 Game clone()
 	 {
 	 	Game clonedGame = new Game();
-	 	clonedGame._mdarray = _mdarray;
+	 	clonedGame._mdarray = [
+			 [0, 0, 0],
+			 [0, 0, 0],
+			 [0, 0, 0]
+		 ];
+		for(var r=0; r<ROWS; r++)
+		{
+			for(var c=0; c<COLS; c++)
+			{
+				clonedGame._mdarray[r][c] = getCell(r, c);
+			}
+		}
 	 	return clonedGame;
 	 }
 	 
@@ -123,6 +134,7 @@ class Game
 
 	void setXAt(int row, int col)
 	{
+		print("X at row: $row, col: $col");
 		_setCell(row, col, X);
 	}
 

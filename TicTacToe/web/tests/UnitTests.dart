@@ -31,8 +31,8 @@ class UnitTests
 
 	void run()
 	{
-//		new	TestStateMachine().run();
-//		new TestGame().run();
+		new	TestStateMachine().run();
+		new TestGame().run();
 		new TestAIModel().run();
 	}
 }
