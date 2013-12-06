@@ -3,6 +3,8 @@ part of tictactoegame;
 class GameBoardController
 {
 	static const num SIZE = 72;
+	static const num MARGIN_LEFT = 125;
+	static const num MARGIN_TOP = 147;
 
 	CanvasElement canvas;
 	CanvasRenderingContext2D context;
@@ -83,6 +85,8 @@ class GameBoardController
 		assert(event.value != null);
 		num	XTarget	=	event.col * SIZE;
 		num	YTarget	=	event.row * SIZE;
+		XTarget += MARGIN_LEFT;
+		YTarget += MARGIN_TOP;
 		Point	p	=	new	Point(XTarget,	YTarget);
 		int	value	=	event.value;
 		if(value ==	Game.X)
@@ -99,12 +103,21 @@ class GameBoardController
 	{
 		num	x = event.offset.x;
 		num	y = event.offset.y;
+//		num offsetX = event.offset.x;
+//		num clientX = event.client.x;
+//		num layerX = event.layer.x;
+//		num pageX = event.page.x;
+//		num screenX = event.screen.x;
+//		print("offset: $offsetX, clientX: $clientX, layerX: $layerX, pageX: $pageX, screenX: $screenX");
+		x -= MARGIN_LEFT;
+		y -= MARGIN_TOP;
 		num	col	= x	/ SIZE;
 		col	= col.floor();
 		num	row	= y	/ SIZE;
 		row	= row.floor();
 		row	= min(row,	2);
 		col	= min(col,	2);
+		
 		print("x:	$x,	y:	$y,	row:	$row,	col:	$col");
 		print(gameModel.game.mdarray[0]);
 		if(gameModel.game.getCell(row, col) == Game.BLANK)
