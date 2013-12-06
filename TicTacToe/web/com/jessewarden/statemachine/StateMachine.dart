@@ -48,7 +48,7 @@ class StateMachine extends Stream
 	// ------------------------------------------------------------------------
 	// ------------------------------------------------------------------------
 
-	void addState(String stateName, dynamic stateData)
+	void addState(String stateName, [dynamic stateData])
 	{
 		if(stateData == null)
 		{

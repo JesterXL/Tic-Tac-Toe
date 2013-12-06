@@ -6,11 +6,140 @@ class TestStateMachine
   {
     group('StateMachine', ()
     {
+		StateMachine stateMachine;
+		
+		setUp(()
+		{
+			stateMachine = new StateMachine();
+		});
+		
+		tearDown(()
+		{
+			stateMachine = null;
+		});
+		
 		test("Initial State is null", ()
 		{
-			StateMachine stateMachine = new StateMachine();
 			expect(stateMachine.state, isNull);
 		});
+		
+		test("Initial state is null with states.", ()
+		{
+			stateMachine.addState("stopped");
+			expect(stateMachine.state, isNull);
+		});
+		
+//		function test_verifyInitialStateIsNullWithStates()
+//    local initial = "playing"
+//    machine:addState(initial)
+//        machine:addState("stopped")
+//        assert_nil(machine.state)
+//end
+//
+//function test_verifyInitialStateIsNotNil()
+//        local initial = "playing"
+//        machine:addState(initial)
+//        machine:addState("stopped")
+//        machine:setInitialState(initial)
+//        assert_equal(initial, machine.state)
+//end
+//
+//function test_enter()
+//        local t = {}
+//        local hitCallback = false
+//        function t.onPlayingEnter(event)
+//                assert_equal(event.toState, "playing")
+//                assert_equal(event.fromState, "idle")
+//                hitCallback = true
+//        end
+//        machine:addState("idle")
+//        machine:addState("playing", { enter = t.onPlayingEnter, from="*"})
+//        machine:setInitialState("idle")
+//        assert_true(machine:canChangeStateTo("playing"), "Not alowed to change to state playing.")
+//        assert_true(machine:changeState("playing"))
+//        assert_equal("playing", machine.state)
+//        assert_true(hitCallback, "Didn't hit the onPlayingEnter callback.")
+//end
+//
+//function test_preventInitialOnEnterEvent()
+//        local t = {}
+//        local hitCallback = false
+//        function t.onPlayingEnter(event)
+//                hitCallback = true
+//        end
+//        machine:addState("idle")
+//        machine:addState("playing", { enter = t.onPlayingEnter, from="*"})
+//        machine:setInitialState("idle")
+//        assert_false(hitCallback, "Hit the callback when I had no initial state set.")
+//end
+//
+//function test_exit()
+//        local t = {}
+//        local hitCallback = false
+//        function t.onPlayingExit(event)
+//                hitCallback = true
+//        end
+//        machine:addState("idle", {exit = t.onPlayingExit})
+//        machine:addState("playing", {from="*"})
+//        machine:setInitialState("idle")
+//        machine:changeState("playing")
+//        assert_true(hitCallback, "Never called onPlayingExit.")
+//end
+//
+//function test_ensurePathAcceptable()
+//        machine:addState("prone")
+//        machine:addState("standing", {from="*"})
+//        machine:addState("running", {from={"standing"}})
+//        machine:setInitialState("standing")
+//        assert_true(machine:changeState("running"), "Failed to ensure correct path.")
+//end
+//
+//function test_ensurePathUnacceptable()
+//        machine:addState("prone")
+//        machine:addState("standing", {from="*"})
+//        machine:addState("running", {from={"standing"}})
+//        machine:setInitialState("prone")
+//        assert_false(machine:changeState("running"), "Failed to ensure correct path.")
+//end
+//
+//function test_hierarchical()
+//        local t = {}
+//        local calledonAttack = false
+//        local calledOnMeleeAttack = false
+//        function t.onAttack(event)
+//                calledonAttack = true
+//        end
+//
+//        function t.onMeleeAttack(event)
+//                calledOnMeleeAttack = true
+//        end
+//
+//        machine:addState("idle", {from="*"})
+//        machine:addState("attack",{from = "idle", enter = t.onAttack})
+//        machine:addState("melee attack", {parent = "attack", from = "attack", enter = t.onMeleeAttack})
+//        machine:addState("smash",{parent = "melee attack", enter = t.onSmash})
+//        machine:addState("missle attack",{parent = "attack", enter = onMissle})
+//
+//        machine:setInitialState("idle")
+//
+//        assert_true(machine:canChangeStateTo("attack"), "Cannot change to state attack from idle!?")
+//        assert_false(machine:canChangeStateTo("melee attack"), "Somehow we're allowed to change to melee attack even though we're not in the attack base state.")
+//        assert_false(machine:changeState("melee attack"), "We're somehow allowed to bypass the attack state and go straigt into the melee attack state.")
+//        assert_true(machine:changeState("attack"), "We're not allowed to go to the attack state from the idle state?")
+//        assert_false(machine:canChangeStateTo("attack"), "We're allowed to change to a state we're already in?")
+//        assert_true(machine:canChangeStateTo("melee attack"), "We're not allowed to go to our child state melee attack from attack?")
+//        assert_true(machine:changeState("melee attack"), "I don't get it, we're in the parent attack state, why can't we change?")
+//        assert_true(machine:canChangeStateTo("smash"), "We're not allowed to go to our smash child state from our parent melee attack state?")
+//        
+//        assert_true(machine:canChangeStateTo("attack"), "We're not allowed to go back to our parent attack state?")
+//        assert_true(machine:changeState("smash"), "We're not allowed to actually change state to our smash child state.")
+//        assert_false(machine:changeState("attack"))
+//        assert_true(machine:changeState("melee attack"))
+//        assert_true(machine:canChangeStateTo("attack"))
+//        assert_true(machine:canChangeStateTo("smash"))
+//        assert_true(machine:changeState("attack"))
+//end
+
 //      test('Constructor minimum args', () {
 //        // Create a Notification with a name only
 //        String name   = "Test";
@@ -51,6 +180,8 @@ class TestStateMachine
 //        expect( body, equals( note.getBody() ) );
 //        expect( body, equals( note.body ) );
 //      });
+		
+		
     });
   }
 
