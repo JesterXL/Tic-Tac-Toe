@@ -8,6 +8,9 @@ import '../statemachine/statemachinelib.dart';
 
 part "Game.dart";
 
+part "events/CellChangeEvent.dart";
+part "events/AIModelEvent.dart";
+
 part "views/BasePiece.dart";
 part "views/PieceO.dart";
 part "views/PieceX.dart";

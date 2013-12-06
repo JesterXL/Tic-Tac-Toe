@@ -6,6 +6,7 @@ class AIModel extends Stream
 	StreamController _controller;
 	StreamSubscription _subscription;
 	GameModel gameModel;
+	List _memento;
 	
 	AIModel(GameModel gameModel)
 	{
@@ -23,8 +24,27 @@ class AIModel extends Stream
 	{
 		if(event.toState == "thinking")
 		{
+//			try
+//			{
+//				calculateNextMove();
+//			}
+//			catch(error)
+//			{
+//				print("AIModel failed to calculateNextMove, an error in the algorithm occured (imagine that...), error: $error");
+//			}
 			calculateNextMove();
+			_controller.add(new AIModelEvent(AIModelEvent.AI_MOVE_COMPLETED));
 		}
+	}
+	
+	void onAITurn()
+	{
+		fsm.changeState("thinking");
+	}
+	
+	void onAITurnOver()
+	{
+		fsm.changeState("idle");
 	}
 	
 	bool calculateNextMove()
@@ -56,9 +76,9 @@ class AIModel extends Stream
 			int r_1_c_1 = firstRow[0];
 			int r_1_c_2 = firstRow[1];
 			int r_1_c_3 = firstRow[2];
-			int r_2_c_1 = secondRow[1];
-			int r_2_c_2 = secondRow[2];
-			int r_2_c_3 = secondRow[3];
+			int r_2_c_1 = secondRow[0];
+			int r_2_c_2 = secondRow[1];
+			int r_2_c_3 = secondRow[2];
 			int r_3_c_1 = thirdRow[0];
 			int r_3_c_2 = thirdRow[1];
 			int r_3_c_3 = thirdRow[2];
@@ -71,7 +91,7 @@ class AIModel extends Stream
 			const int O = Game.O;
 			
 			// Can I make any winning moves?
-			List<Map<String, int>> winningMoves = game.getWinningMoves(X);
+			List<Map<String, int>> winningMoves = getWinningMoves(Game.X);
 			if(winningMoves.length > 0)
 			{
 				// then take it
@@ -127,17 +147,74 @@ class AIModel extends Stream
 			return false;
 			
 		}
-		
-		
-	
-		
 	}
+	
+	List<Map<String, int>> getWinningMoves(int forType)
+	{
+		Game clonedGame = gameModel.game.clone();
+		storeMemento(clonedGame);
+		List<Map<String, int>> winningMoves = [];
+		for(var r=0; r<Game.ROWS; r++)
+		{
+			for(var c=0; c<Game.COLS; c++)
+			{
+				if(clonedGame.getCell(r, c) == Game.BLANK)
+				{
+					clonedGame.setXAt(r, c);
+					if(forType == Game.X)
+					{
+						if(clonedGame.xIsWinner)
+						{
+							winningMoves.add({"row": r, "col": c});
+						}
+					}
+					else if(forType == Game.O)
+					{
+						if(clonedGame.oIsWinner)
+						{
+							winningMoves.add({"row": r, "col": c});
+						}
+					}
+					
+				
+					resetToMemento(clonedGame);
+					storeMemento(clonedGame);
+				}
+			}
+		}
+		return winningMoves;
+	}
+	
+	void storeMemento(Game game)
+	 { 
+		 _memento = [
+			 [0, 0, 0],
+			 [0, 0, 0],
+			 [0, 0, 0]
+		 ];
+	 
+		 // [jwarden 12.6.2013] TODO: optimize later
+		 for(var r=0; r<Game.ROWS; r++)
+		 {
+		 	for(var c=0; c<Game.COLS; c++)
+		 	{
+	 		_memento[r][c] = game.getCell(r, c);
+		 	}
+		 }
+	 }
+	 
+	 void resetToMemento(Game game)
+	 {
+	 	game.mdarray = _memento;
+	 	_memento = null;
+	 }
+	 
 	
 	
 	// ------------------------------------------------------------------------
 	// ------------------------------------------------------------------------
 	// Stream Impl
-	StreamSubscription listen(void onData(dynamic cell),
+	StreamSubscription listen(void onData(AIModelEvent event),
 							{ void onError(Error error),
 							  void onDone(),
 							  bool cancelOnError })
@@ -155,19 +232,9 @@ class AIModel extends Stream
 		_subscription = null;
 	}
 	
-	void _onPause()
+	void _onData(AIModelEvent event)
 	{
-		_subscription.pause();
-	}
-	
-	void _onResume()
-	{
-		_subscription.resume();
-	}
-	
-	void _onData(dynamic value)
-	{
-		_controller.add(value);
+		_controller.add(event);
 	}
 	
 	void _onDone()

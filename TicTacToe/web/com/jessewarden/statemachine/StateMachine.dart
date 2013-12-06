@@ -80,7 +80,8 @@ class StateMachine extends Stream
 					if(parentStates[j].enter)
 					{
 						callbackEvent.currentState = parentStates[j].name;
-						parentStates[j].enter.call(null, callbackEvent);
+						Function enterCallback = parentStates[j].enter;
+						enterCallback(callbackEvent);
 						
 					}
 				}
@@ -89,7 +90,8 @@ class StateMachine extends Stream
 			if(_states[_state].enter != null)
 			{
 				callbackEvent.currentState = _state;
-				_states[_state].enter.call(null, callbackEvent);
+				Function enterCallback = _states[_state].enter;
+				enterCallback(callbackEvent);
 			}
 			
 			StateMachineEvent outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_COMPLETE);

@@ -15,17 +15,24 @@ class GameModel extends Stream
   
 	GameModel()
 	{
-		 _controller = new StreamController(
-			onPause: _onPause,
-			onResume: _onResume,
-			onCancel: _onCancel);
+		 _controller = new StreamController.broadcast(onCancel: _onCancel, sync: true);
 		 _game = new Game();
+		 // [jwarden 12.5.2013] Proxy for now.
+		 _game.listen((CellChangeEvent event)
+		 {
+			 _controller.add(event);
+		 });
+	}
+	
+	void startGame()
+	{
+		_game.resetGame();
 	}
   
 	// ------------------------------------------------------------------------
 	// ------------------------------------------------------------------------
 	// Stream Impl
-	StreamSubscription listen(void onData(dynamic cell),
+	StreamSubscription listen(void onData(CellChangeEvent event),
       { void onError(Error error),
 	void onDone(),
 	bool cancelOnError }) {

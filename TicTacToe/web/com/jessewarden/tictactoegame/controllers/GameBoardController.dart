@@ -4,13 +4,15 @@ class GameBoardController
 {
 	static const num SIZE = 72;
 
-	CanvasElement	canvas;
-	CanvasRenderingContext2D	context;
-	PieceX	xPiece;
-	PieceO	oPiece;
-	TicTacToeBoard	board;
-	GameModel	gameModel;
+	CanvasElement canvas;
+	CanvasRenderingContext2D context;
+	PieceX xPiece;
+	PieceO oPiece;
+	TicTacToeBoard board;
+	GameModel gameModel;
+	AIModel aiModel;
 	StateMachine fsm;
+	StreamSubscription canvasClickSubscription;
 	
 	GameBoardController(CanvasElement	canvas)
 	{
@@ -38,18 +40,24 @@ class GameBoardController
 	void onReady()
 	{
 		fsm = new StateMachine();
+		fsm.addState("idle", from: "*");
 		fsm.addState("ready", enter: onEnterReady, exit: onExitReady, from: "*");
 		fsm.addState("computerTurn", enter: onEnterComputerTurn, exit: onExitComputerTurn, from: "*");
 		fsm.addState("playerTurn", enter: onEnterPlayerTurn, exit: onExitPlayerTurn, from: "*");
 		fsm.addState("youWin", enter: onEnterYouWin, exit: onExitYouWin, from: "*");
 		fsm.addState("youLose", enter: onEnterYouLose, exit: onExitYouLose, from: "*");
-		fsm.initialState = "ready";
+		fsm.initialState = "idle";
+		
+		resetBoard();
 		
 		gameModel = new	GameModel();
-		gameModel.resetGame();
+		gameModel.startGame();
 		gameModel.listen(onGameModelChanged);
-		resetBoard();
-//		canvas.onClick.listen(onCanvasClicked);
+		
+		aiModel = new AIModel(gameModel);
+		aiModel.listen(onAIModelEvent);
+		
+		fsm.changeState("computerTurn");
 	}
 	
 	void resetBoard()
@@ -58,22 +66,30 @@ class GameBoardController
 		board.draw(context,	new	Point(0, 0));
 	}
 	
-	void onGameModelChanged(dynamic	changeData)
+	void onGameModelChanged(CellChangeEvent event)
 	{
-		updateBoard(changeData);
+		updateBoard(event);
 	}
 	
-	void updateBoard(dynamic	changeData)
+	void onAIModelEvent(AIModelEvent event)
 	{
-		num	XTarget	=	changeData["col"] * SIZE;
-		num	YTarget	=	changeData["row"] * SIZE;
+		fsm.changeState("playerTurn");
+	}
+	
+	void updateBoard(CellChangeEvent event)
+	{
+		assert(event.col != null);
+		assert(event.row != null);
+		assert(event.value != null);
+		num	XTarget	=	event.col * SIZE;
+		num	YTarget	=	event.row * SIZE;
 		Point	p	=	new	Point(XTarget,	YTarget);
-		int	value	=	changeData["value"]	as	int;
-		if(value ==	GameModel.X)
+		int	value	=	event.value;
+		if(value ==	Game.X)
 		{
 			xPiece.draw(context, p);
 		}
-		else if(value == GameModel.O)
+		else if(value == Game.O)
 		{
 			oPiece.draw(context, p);
 		}
@@ -90,60 +106,71 @@ class GameBoardController
 		row	= min(row,	2);
 		col	= min(col,	2);
 //		print("x:	$x,	y:	$y,	row:	$row,	col:	$col");
-		gameModel.setXAt(row, col);
+		if(gameModel.game.getCell(row, col) == Game.BLANK)
+		{
+			gameModel.game.setOAt(row, col);
+			print("Player chose, setting state to computer turn.");
+			fsm.changeState("computerTurn");
+		}
 	}
 	
 	// --------------------------------------------------------------------------------------------------
 	// --------------------------------------------------------------------------------------------------
 	// State Changes
-	void onEnterReady()
+	void onEnterReady(StateMachineEvent event)
 	{
+		print("onEnterReady");
 		resetBoard();
 	}
 	
-	void onExitReady()
+	void onExitReady(StateMachineEvent event)
 	{
-	
+		print("onExitReady");
 	}
 	
-	void onEnterComputerTurn()
+	void onEnterComputerTurn(StateMachineEvent event)
 	{
-	
+		print("onEnterComputerTurn");
+		aiModel.onAITurn();
 	}
 	
-	void onExitComputerTurn()
+	void onExitComputerTurn(StateMachineEvent event)
 	{
-	
+		print("onExitComputerTurn");
+		aiModel.onAITurnOver();
 	}
 	
-	void onEnterPlayerTurn()
+	void onEnterPlayerTurn(StateMachineEvent event)
 	{
-	
+		print("onEnterPlayerTurn");
+		canvasClickSubscription = canvas.onClick.listen(onCanvasClicked);
 	}
 	
-	void onExitPlayerTurn()
+	void onExitPlayerTurn(StateMachineEvent event)
 	{
-	
+		print("onExitPlayerTurn");
+		canvasClickSubscription.cancel();
+		canvasClickSubscription = null;
 	}
 	
-	void onEnterYouWin()
+	void onEnterYouWin(StateMachineEvent event)
 	{
-	
+		print("onEnterYouWin");
 	}
 	
-	void onExitYouWin()
+	void onExitYouWin(StateMachineEvent event)
 	{
-	
+		print("onExitYouWin");
 	}
 	
-	void onEnterYouLose()
+	void onEnterYouLose(StateMachineEvent event)
 	{
-	
+		print("onEnterYouLose");
 	}
 	
-	void onExitYouLose()
+	void onExitYouLose(StateMachineEvent event)
 	{
-	
+		print("onExitYouLose");
 	}
 	// --------------------------------------------------------------------------------------------------
 	// --------------------------------------------------------------------------------------------------

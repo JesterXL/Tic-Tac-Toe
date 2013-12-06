@@ -9,16 +9,27 @@ class Game
 	static const int O = 2;
 	
 	List _mdarray;
-	List _memento;
+	
+	
+	StreamController _controller;
+ 	StreamSubscription _subscription;
 	
 	Game()
 	{
+		_controller = new StreamController.broadcast(onCancel: _onCancel, sync: true);
 		resetGame();
 	}
 	
 	List get mdarray
 	{
 		return _mdarray;
+	}
+	
+	void set mdarray(List value)
+	{
+		_mdarray = value;
+		CellChangeEvent event = new CellChangeEvent(CellChangeEvent.ALL_CELLS_CHANGED);
+		_controller.add(event);
 	}
 	
 	bool get isBlank
@@ -55,13 +66,16 @@ class Game
 		assert(col != null);
 		assert(row <= ROWS);
 		assert(col <= COLS);
+		assert(value != null);
 		assert(_mdarray != null);
 		_mdarray[row][col] = value;
-//		dynamic matchResult = getMatchResults();
-//		dynamic changeObject = {"row": row, 
-//	                        "col": col, 
-//	                        "value": value, 
-//	                        "match": matchResult["match"]};
+		CellChangeEvent event = new CellChangeEvent(CellChangeEvent.CELL_CHANGED);
+		dynamic matchResult = getMatchResults();
+		event.row = row;
+		event.col = col;
+		event.value = value;
+		event.match = matchResult["match"];
+		_controller.add(event);
 	}
 	
 	dynamic getMatchResults()
@@ -91,6 +105,8 @@ class Game
 			 [0, 0, 0],
 			 [0, 0, 0]
 		 ];
+		 CellChangeEvent event = new CellChangeEvent(CellChangeEvent.ALL_CELLS_CHANGED);
+		_controller.add(event);
 	 }
 	 
 	 Game clone()
@@ -98,30 +114,6 @@ class Game
 	 	Game clonedGame = new Game();
 	 	clonedGame._mdarray = _mdarray;
 	 	return clonedGame;
-	 }
-	 
-	 void storeMemento()
-	 { 
-		 _memento = [
-			 [0, 0, 0],
-			 [0, 0, 0],
-			 [0, 0, 0]
-		 ];
-		 
-		 // [jwarden 12.6.2013] TODO: optimize later
-		 for(var r=0; r<ROWS; r++)
-		 {
-		 	for(var c=0; c<COLS; c++)
-		 	{
-		 		_memento[r][c] = _mdarray[r][c];
-		 	}
-		 }
-	 }
-	 
-	 void resetToMemento()
-	 {
-	 	_mdarray = _memento;
-	 	_memento = null;
 	 }
 	 
 	void setBlankAt(int row, int col)
@@ -181,39 +173,39 @@ class Game
 		return {"match": match, "index": matchIndex, "type": lastType};
 	}
 	
-	List<Map<String, int>> getWinningMoves(int forType)
+	
+	
+// ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// Stream Impl
+	StreamSubscription listen(void onData(CellChangeEvent event),
+							{ void onError(Error error),
+							  void onDone(),
+							  bool cancelOnError })
 	{
-		storeMemento();
-		List<Map<String, int>> winningMoves = [];
-		for(var r=0; r<ROWS; r++)
-		{
-			for(var c=0; c<COLS; c++)
-			{
-				if(getCell(r, c) == BLANK)
-				{
-					setXAt(r, c);
-					if(forType == X)
-					{
-						if(xIsWinner)
-						{
-							winningMoves.add({"row": r, "col": c});
-						}
-					}
-					else if(forType == O)
-					{
-						if(oIsWinner)
-						{
-							winningMoves.add({"row": r, "col": c});
-						}
-					}
-					
-				
-					resetToMemento();
-					storeMemento();
-				}
-			}
-		}
-		return winningMoves;
+	  _subscription =  _controller.stream.listen(onData,
+	                                   onError: onError,
+	                                   onDone: onDone,
+	                                   cancelOnError: cancelOnError);
+	  return _subscription;
 	}
+	
+	void _onCancel()
+	{
+		_subscription.cancel();
+		_subscription = null;
+	}
+	
+	void _onData(dynamic value)
+	{
+		_controller.add(value);
+	}
+	
+	void _onDone()
+	{
+		_controller.close();
+	}
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
 	
 }
