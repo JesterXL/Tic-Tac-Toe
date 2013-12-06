@@ -9,7 +9,7 @@ class TestStateMachine
 		test("Initial State is null", ()
 		{
 			StateMachine stateMachine = new StateMachine();
-			expect(stateMachine, isNull);
+			expect(stateMachine.state, isNull);
 		});
 //      test('Constructor minimum args', () {
 //        // Create a Notification with a name only
