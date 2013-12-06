@@ -192,7 +192,8 @@ class StateMachine extends Stream
 			if(_states[_state].exit != null)
 			{
 				exitCallbackEvent.currentState = _state;
-				_states[_state].exit.call(null, exitCallbackEvent);
+				Function exitCallback = _states[_state].exit;
+				exitCallback(exitCallbackEvent);
 			}
 			parentState = _states[_state];
 			for(var i=0; i<path[0]-1; i++)
@@ -201,7 +202,8 @@ class StateMachine extends Stream
 				if(parentState.exit != null)
 				{
 					exitCallbackEvent.currentState = parentState.name;
-					parentState.exit.call(null, exitCallbackEvent);
+					Function parentExitCallback = parentState.exit;
+					parentExitCallback(exitCallbackEvent);
 				}
 			}
 		}
@@ -220,7 +222,8 @@ class StateMachine extends Stream
 					if(parentStates[k] && parentStates[k].enter)
 					{
 						enterCallbackEvent.currentState = parentStates[k].name;
-						parentStates[k].enter.call(null, enterCallbackEvent);
+						Function parentEnterCallback = parentStates[k].enter;
+						parentEnterCallback(enterCallbackEvent);
 					}
 				}
 			}

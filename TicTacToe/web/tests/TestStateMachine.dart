@@ -55,35 +55,33 @@ class TestStateMachine
 			expect(stateMachine.state, "playing");
 			expect(hitCallback, true);
 		});
-//
-//function test_enter()
-//        local t = {}
-//        local hitCallback = false
-//        function t.onPlayingEnter(event)
-//                assert_equal(event.toState, "playing")
-//                assert_equal(event.fromState, "idle")
-//                hitCallback = true
-//        end
-//        machine:addState("idle")
-//        machine:addState("playing", { enter = t.onPlayingEnter, from="*"})
-//        machine:setInitialState("idle")
-//        assert_true(machine:canChangeStateTo("playing"), "Not alowed to change to state playing.")
-//        assert_true(machine:changeState("playing"))
-//        assert_equal("playing", machine.state)
-//        assert_true(hitCallback, "Didn't hit the onPlayingEnter callback.")
-//end
-//
-//function test_preventInitialOnEnterEvent()
-//        local t = {}
-//        local hitCallback = false
-//        function t.onPlayingEnter(event)
-//                hitCallback = true
-//        end
-//        machine:addState("idle")
-//        machine:addState("playing", { enter = t.onPlayingEnter, from="*"})
-//        machine:setInitialState("idle")
-//        assert_false(hitCallback, "Hit the callback when I had no initial state set.")
-//end
+
+		test("prevent initial enter event", ()
+		{
+			bool hitCallback = false;
+			Function callback = (StateMachineEvent event)
+			{
+				hitCallback = true;
+			};
+			stateMachine.addState("idle");
+			stateMachine.addState("playing", enter: callback, from: "*");
+			stateMachine.initialState = "idle";
+			expect(hitCallback, false);
+		});
+		
+		test("exit callback works", ()
+		{
+			bool hitCallback = false;
+			Function callback = (StateMachineEvent event)
+			{
+				hitCallback = true;
+			};
+			stateMachine.addState("idle", exit: callback);
+			stateMachine.addState("playing", from: "*");
+			stateMachine.initialState = "idle";
+			stateMachine.changeState("playing");
+			expect(hitCallback, true);
+		});
 //
 //function test_exit()
 //        local t = {}
