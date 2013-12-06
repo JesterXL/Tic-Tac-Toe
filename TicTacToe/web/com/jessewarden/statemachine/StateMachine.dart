@@ -1,6 +1,7 @@
+// ported from here https://github.com/cassiozen/AS3-State-Machine
 part of statemachine;
 
-class StateMachine extends Stream
+class StateMachine
 {
 	String id;
 	String _state;
@@ -83,8 +84,10 @@ class StateMachine extends Stream
 		if(_state == null && _states.containsKey(stateName))
 		{
 			_state = stateName;
-//			var _callbackEvent:StateMachineEvent = new StateMachineEvent(StateMachineEvent.ENTER_CALLBACK);
-//			_callbackEvent.toState = stateName;
+			dynamic changeObject = {"type": "enter",
+									"toState": stateName,
+									"currentState": null};
+									
 			if(_states[_state].root)
 			{
 				parentStates = _states[_state].parents;
@@ -92,7 +95,7 @@ class StateMachine extends Stream
 				{
 					if(parentStates[j].enter)
 					{
-						_callbackEvent.currentState = parentStates[j].name;
+						changeObject["currentState"] = parentStates[j].name;
 						//parentStates[j].enter.call(null, _callbackEvent);// TODO: figure out syntac
 					}
 				}
@@ -100,8 +103,8 @@ class StateMachine extends Stream
 			
 			if(_states[_state].enter)
 			{
-				_callbackEvent.currentState = _state;
-				_states[_state].enter.call(null, _callbackEvent); // TODO: figure out syntac
+				changeObject["currentState"] = _state;
+//				_states[_state].enter.call(null, _callbackEvent); // TODO: figure out syntac
 			}
 			// TODO: handle event/stream
 //			_outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_COMPLETE);
@@ -122,15 +125,7 @@ class StateMachine extends Stream
 	
 	State getStateByName(String name)
 	{
-		State foundState = null;
-		return _states.firstWhere((State s)
-		{
-			if(s.name == name)
-			{
-				foundState = s;
-			}
-		});
-		return foundState;
+		return _states[name];
 	}
 	
 	bool canChangeStateTo(String stateName)
@@ -177,7 +172,7 @@ class StateMachine extends Stream
 		// If current state is not allowed to make this transition
 		if(!canChangeStateTo(stateTo))
 		{
-			trace("[StateMachine] id $id Transition to $stateTo denied");
+			print("[StateMachine] id $id Transition to $stateTo denied");
 			// TODO: figure out event/stream
 //			_outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_DENIED);
 //			_outEvent.fromState = _state;

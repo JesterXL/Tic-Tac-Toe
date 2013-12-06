@@ -1,3 +1,6 @@
+// ported from here https://github.com/cassiozen/AS3-State-Machine
+part of statemachine;
+
 class State
 {
   String name;
@@ -59,10 +62,10 @@ class State
     if(parentState != null)
     {
       parentList.add(parentState);
-      while(parentState.parent)
+      while(parentState.parent != null)
       {
         parentState = parentState.parent;
-        parentList.push(parentState);
+        parentList.add(parentState);
       }
     }
     return parentList;

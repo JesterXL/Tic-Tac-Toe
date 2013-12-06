@@ -1,6 +1,7 @@
 import 'dart:html';
 import 'dart:async';
 import 'com/jessewarden/tictactoegame/tictactoegamelib.dart';
+import 'com/jessewarden/statemachine/statemachinelib.dart';
 
 GameModel model;
 GameBoardController boardController;
@@ -10,6 +11,13 @@ void main()
   print("main");
   boardController = new GameBoardController(querySelector("#mainCanvas"));
   boardController.init();
+	
+//	EnterStream stateTest = new EnterStream();
+//	stateTest.listen((dynamic object)
+//	{
+//		print(object);
+//	});
+//	stateTest.controller.add("cow");
   
 //  List test = [1, 2, 3, 4];
 //  test.forEach((int index)
