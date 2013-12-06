@@ -8,7 +8,7 @@ class State
   Function enter;
   Function exit;
   State _parent;
-  List children;
+  List children = [];
   
   State({String name, 
                  dynamic from:null, 
@@ -24,7 +24,7 @@ class State
     this.enter    = enter;
     this.exit     = exit;
     this.children     = [];
-    if(parent == null)
+    if(parent != null)
     {
       _parent = parent;
       _parent.children.add(this);

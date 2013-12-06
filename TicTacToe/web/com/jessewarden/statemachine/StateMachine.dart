@@ -50,16 +50,22 @@ class StateMachine extends Stream
 
 	void addState(String stateName, [dynamic stateData])
 	{
-		if(stateData == null)
+		try
 		{
-			stateData = {};
+			if(stateData == null)
+			{
+				stateData = {};
+			}
+			_states[stateName] = new State(name: stateName,
+											from: stateData["from"],
+											enter: stateData["enter"],
+											exit: stateData["exit"],
+											parent: _states[stateData["parent"]]);
 		}
-		_states[stateName] = new State(name: stateName,
-										from: stateData.from,
-										enter: stateData.enter,
-										exit: stateData.exit,
-										parent: _states[stateData.parent]);
-		
+		catch(error)
+		{
+			print("StateMachine::addState error: $error");
+		}
 	}
 	
 	void set initialState(String stateName)
@@ -70,7 +76,7 @@ class StateMachine extends Stream
 			StateMachineEvent callbackEvent = new StateMachineEvent(StateMachineEvent.ENTER_CALLBACK);
 			callbackEvent.toState = stateName;
 									
-			if(_states[_state].root)
+			if(_states[_state].root != null)
 			{
 				parentStates = _states[_state].parents;
 				for(var j=_states[_state].parents.length - 1; j>=0; j--)
@@ -84,10 +90,10 @@ class StateMachine extends Stream
 				}
 			}
 			
-			if(_states[_state].enter)
+			if(_states[_state].enter != null)
 			{
 				callbackEvent.currentState = _state;
-				_states[_state].enter.call(null, callbackEvent); // TODO: figure out syntac
+				_states[_state].enter.call(null, callbackEvent);
 			}
 			
 			StateMachineEvent outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_COMPLETE);
@@ -98,7 +104,14 @@ class StateMachine extends Stream
 	
 	String get state
 	{
-		return _states[_state];
+		if(_state != null)
+		{
+			return _states[_state].name;
+		}
+		else
+		{
+			return null;
+		}
 	}
 	
 	Map get states

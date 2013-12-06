@@ -23,18 +23,20 @@ class TestStateMachine
 			expect(stateMachine.state, isNull);
 		});
 		
-		test("Initial state is null with states.", ()
+		test("Initial state is null with a state added", ()
 		{
 			stateMachine.addState("stopped");
 			expect(stateMachine.state, isNull);
 		});
 		
-//		function test_verifyInitialStateIsNullWithStates()
-//    local initial = "playing"
-//    machine:addState(initial)
-//        machine:addState("stopped")
-//        assert_nil(machine.state)
-//end
+		test("Initial state is not null when initialState is set", ()
+		{
+			String initialState = "initial";
+			stateMachine.addState(initialState);
+			stateMachine.addState("stopped");
+			stateMachine.initialState  = initialState;
+			expect(stateMachine.state, initialState);
+		});
 //
 //function test_verifyInitialStateIsNotNil()
 //        local initial = "playing"
