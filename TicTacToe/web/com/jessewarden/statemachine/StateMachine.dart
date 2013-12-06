@@ -1,7 +1,7 @@
 // ported from here https://github.com/cassiozen/AS3-State-Machine
 part of statemachine;
 
-class StateMachine
+class StateMachine extends Stream
 {
 	String id;
 	String _state;
@@ -16,16 +16,13 @@ class StateMachine
 	StateMachine()
 	{
 		_states = new Map();
-		_controller = new StreamController(
-		    onPause: _onPause,
-		    onResume: _onResume,
-		    onCancel: _onCancel);
+		_controller = new StreamController.broadcast(onCancel: _onCancel);
 	}
 	
 	// ------------------------------------------------------------------------
 	// ------------------------------------------------------------------------
 	// Stream Impl
-	StreamSubscription listen(void onData(dynamic stateChangeObject),
+	StreamSubscription listen(void onData(StateMachineEvent event),
 		{ void onError(Error error),
 		void onDone(),
 		bool cancelOnError })
@@ -43,25 +40,11 @@ class StateMachine
 		_subscription = null;
 	}
 	
-	void _onPause()
+	void _onData(StateMachineEvent event)
 	{
-		_subscription.pause();
+		_controller.add(event);
 	}
 	
-	void _onResume()
-	{
-		_subscription.resume();
-	}
-//	
-//	void _onData(dynamic value)
-//	{
-//		_controller.add(value);
-//	}
-	
-	void _onDone()
-	{
-		_controller.close();
-	}
 	// ------------------------------------------------------------------------
 	// ------------------------------------------------------------------------
 
@@ -84,9 +67,8 @@ class StateMachine
 		if(_state == null && _states.containsKey(stateName))
 		{
 			_state = stateName;
-			dynamic changeObject = {"type": "enter",
-									"toState": stateName,
-									"currentState": null};
+			StateMachineEvent callbackEvent = new StateMachineEvent(StateMachineEvent.ENTER_CALLBACK);
+			callbackEvent.toState = stateName;
 									
 			if(_states[_state].root)
 			{
@@ -95,21 +77,22 @@ class StateMachine
 				{
 					if(parentStates[j].enter)
 					{
-						changeObject["currentState"] = parentStates[j].name;
-						//parentStates[j].enter.call(null, _callbackEvent);// TODO: figure out syntac
+						callbackEvent.currentState = parentStates[j].name;
+						parentStates[j].enter.call(null, callbackEvent);
+						
 					}
 				}
 			}
 			
 			if(_states[_state].enter)
 			{
-				changeObject["currentState"] = _state;
-//				_states[_state].enter.call(null, _callbackEvent); // TODO: figure out syntac
+				callbackEvent.currentState = _state;
+				_states[_state].enter.call(null, callbackEvent); // TODO: figure out syntac
 			}
-			// TODO: handle event/stream
-//			_outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_COMPLETE);
-//			_outEvent.toState = stateName;
-//			dispatchEvent(_outEvent);
+			
+			StateMachineEvent outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_COMPLETE);
+			outEvent.toState = stateName;
+			_controller.add(outEvent);
 		}
 	}
 	
@@ -173,12 +156,11 @@ class StateMachine
 		if(!canChangeStateTo(stateTo))
 		{
 			print("[StateMachine] id $id Transition to $stateTo denied");
-			// TODO: figure out event/stream
-//			_outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_DENIED);
-//			_outEvent.fromState = _state;
-//			_outEvent.toState = stateTo;
-//			_outEvent.allowedStates = _states[stateTo].from;
-//			dispatchEvent(_outEvent);
+			StateMachineEvent outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_DENIED);
+			outEvent.fromState = _state;
+			outEvent.toState = stateTo;
+			outEvent.allowedStates = _states[stateTo].from;
+			_controller.add(outEvent);
 			return;
 		}
 		
@@ -186,14 +168,13 @@ class StateMachine
 		path = findPath(_state, stateTo);
 		if(path[0] > 0)
 		{
-			// TODO: figure out stream/event
-//			var _exitCallbackEvent:StateMachineEvent = new StateMachineEvent(StateMachineEvent.EXIT_CALLBACK);
-//			_exitCallbackEvent.toState = stateTo;
-//			_exitCallbackEvent.fromState = _state;
+			StateMachineEvent exitCallbackEvent = new StateMachineEvent(StateMachineEvent.EXIT_CALLBACK);
+			exitCallbackEvent.toState = stateTo;
+			exitCallbackEvent.fromState = _state;
 			if(_states[_state].exit != null)
 			{
-//				_exitCallbackEvent.currentState = _state;
-//				_states[_state].exit.call(null,_exitCallbackEvent);
+				exitCallbackEvent.currentState = _state;
+				_states[_state].exit.call(null, exitCallbackEvent);
 			}
 			parentState = _states[_state];
 			for(var i=0; i<path[0]-1; i++)
@@ -201,8 +182,8 @@ class StateMachine
 				parentState = parentState.parent;
 				if(parentState.exit != null)
 				{
-//					_exitCallbackEvent.currentState = parentState.name;
-//					parentState.exit.call(null,_exitCallbackEvent);
+					exitCallbackEvent.currentState = parentState.name;
+					parentState.exit.call(null, exitCallbackEvent);
 				}
 			}
 		}
@@ -210,9 +191,9 @@ class StateMachine
 		_state = stateTo;
 		if(path[1] > 0)
 		{
-//			var _enterCallbackEvent:StateMachineEvent = new StateMachineEvent(StateMachineEvent.ENTER_CALLBACK);
-//			_enterCallbackEvent.toState = stateTo;
-//			_enterCallbackEvent.fromState = oldState;
+			StateMachineEvent enterCallbackEvent = new StateMachineEvent(StateMachineEvent.ENTER_CALLBACK);
+			enterCallbackEvent.toState = stateTo;
+			enterCallbackEvent.fromState = oldState;
 			if(_states[stateTo].root)
 			{
 				parentStates = _states[stateTo].parents;
@@ -220,24 +201,24 @@ class StateMachine
 				{
 					if(parentStates[k] && parentStates[k].enter)
 					{
-//						_enterCallbackEvent.currentState = parentStates[k].name;
-//						parentStates[k].enter.call(null,_enterCallbackEvent);
+						enterCallbackEvent.currentState = parentStates[k].name;
+						parentStates[k].enter.call(null, enterCallbackEvent);
 					}
 				}
 			}
 			
 			if(_states[_state].enter)
 			{
-//				_enterCallbackEvent.currentState = _state;
-//				_states[_state].enter.call(null,_enterCallbackEvent);
+				enterCallbackEvent.currentState = _state;
+				_states[_state].enter.call(null, enterCallbackEvent);
 			}
 			print("[StateMachine] id $id State Changed to $_state");
 			
 			// Transition is complete. dispatch TRANSITION_COMPLETE
-//			_outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_COMPLETE);
-//			_outEvent.fromState = oldState ;
-//			_outEvent.toState = stateTo;
-//			dispatchEvent(_outEvent);
+			StateMachineEvent outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_COMPLETE);
+			outEvent.fromState = oldState ;
+			outEvent.toState = stateTo;
+			_controller.add(outEvent);
 		}
 		
 	}
