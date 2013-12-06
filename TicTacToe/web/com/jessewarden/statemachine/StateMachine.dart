@@ -5,33 +5,82 @@ class StateMachine extends Stream
 	String id;
 	String _state;
 	Map _states;
-	// outEvent // TODO: convert to stream
 	State parentState;
 	List parentStates;
 	List path;
 	
+	StreamController _controller;
+  	StreamSubscription _subscription;
+	
 	StateMachine()
 	{
-		_states = new Map();	
+		_states = new Map();
+		_controller = new StreamController(
+		    onPause: _onPause,
+		    onResume: _onResume,
+		    onCancel: _onCancel);
 	}
 	
+	// ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+	// Stream Impl
+	StreamSubscription listen(void onData(dynamic stateChangeObject),
+		{ void onError(Error error),
+		void onDone(),
+		bool cancelOnError })
+	{
+		_subscription =  _controller.stream.listen(onData,
+			onError: onError,
+			onDone: onDone,
+			cancelOnError: cancelOnError);
+		return _subscription;
+	}
+	
+	void _onCancel()
+	{
+		_subscription.cancel();
+		_subscription = null;
+	}
+	
+	void _onPause()
+	{
+		_subscription.pause();
+	}
+	
+	void _onResume()
+	{
+		_subscription.resume();
+	}
+//	
+//	void _onData(dynamic value)
+//	{
+//		_controller.add(value);
+//	}
+	
+	void _onDone()
+	{
+		_controller.close();
+	}
+	// ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------
+
 	void addState(String stateName, dynamic stateData)
 	{
 		if(stateData == null)
 		{
 			stateData = {};
 		}
-		_states[stateName] = new State(stateName,
-										stateData.from,
-										stateData.enter,
-										stateData.exit,
-										_states[statData.parent]);
+		_states[stateName] = new State(name: stateName,
+										from: stateData.from,
+										enter: stateData.enter,
+										exit: stateData.exit,
+										parent: _states[stateData.parent]);
 		
 	}
 	
 	void set initialState(String stateName)
 	{
-		if(_state == null && stateName in _states)
+		if(_state == null && _states.containsKey(stateName))
 		{
 			_state = stateName;
 //			var _callbackEvent:StateMachineEvent = new StateMachineEvent(StateMachineEvent.ENTER_CALLBACK);

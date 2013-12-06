@@ -7,9 +7,7 @@ class State
   State _parent;
   List children;
   
-  State(this.name);
-  
-  void setParent({String name, 
+  State({String name, 
                  dynamic from:null, 
                  Function enter:null,
                  Function exit:null,
