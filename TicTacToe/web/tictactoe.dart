@@ -12,13 +12,6 @@ void main()
   boardController = new GameBoardController(querySelector("#mainCanvas"));
   boardController.init();
 	
-	Function cow = (String name, {String uber:null})
-	{
-	
-	};
-	
-	cow("sup");
-	cow("sup", uber: "man");
 	
 //	EnterStream stateTest = new EnterStream();
 //	stateTest.listen((dynamic object)

@@ -234,7 +234,7 @@ class StateMachine extends Stream
 				Function enterCallback = _states[_state].enter;
 				enterCallback(enterCallbackEvent);
 			}
-			print("[StateMachine] id $id State Changed to $_state");
+			//print("[StateMachine] id $id State Changed to $_state");
 			
 			// Transition is complete. dispatch TRANSITION_COMPLETE
 			StateMachineEvent outEvent = new StateMachineEvent(StateMachineEvent.TRANSITION_COMPLETE);

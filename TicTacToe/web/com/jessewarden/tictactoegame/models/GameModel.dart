@@ -60,6 +60,22 @@ class GameModel extends Stream
 // ------------------------------------------------------------------------
 // ------------------------------------------------------------------------
   
+	List get mdarray
+	{
+		return _mdarray;
+	}
+	
+	bool get isBlank
+	{
+		return _mdarray.every((List<int> row)
+		{
+			return row.every((int item)
+			{
+				return item == BLANK;
+			});
+		});
+	}
+	
   int _getCell(int row, int col)
   {
     return _mdarray[row][col];
@@ -146,20 +162,7 @@ class GameModel extends Stream
        ];
   }
   
-  void setBlankAt(int row, int col)
-  {
-    _setCell(row, col, BLANK);
-  }
-  
-  void setXAt(int row, int col)
-  {
-    _setCell(row, col, X);
-  }
-  
-  void setOAt(int row, int col)
-  {
-    _setCell(row, col, O);
-  }
+
   
   
 }
