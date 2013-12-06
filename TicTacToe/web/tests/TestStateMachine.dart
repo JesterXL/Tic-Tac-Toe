@@ -37,14 +37,24 @@ class TestStateMachine
 			stateMachine.initialState  = initialState;
 			expect(stateMachine.state, initialState);
 		});
-//
-//function test_verifyInitialStateIsNotNil()
-//        local initial = "playing"
-//        machine:addState(initial)
-//        machine:addState("stopped")
-//        machine:setInitialState(initial)
-//        assert_equal(initial, machine.state)
-//end
+		
+		test("enterCallback works", ()
+		{
+			bool hitCallback = false;
+			Function callback = (StateMachineEvent event)
+			{
+				expect(event.toState, "playing");
+				expect(event.fromState, "idle");
+				hitCallback = true;
+			};
+			stateMachine.addState("idle");
+			stateMachine.addState("playing", enter: callback, from: "*");
+			stateMachine.initialState = "idle";
+			expect(stateMachine.canChangeStateTo("playing"), true);
+			expect(stateMachine.changeState("playing"), true);
+			expect(stateMachine.state, "playing");
+			expect(hitCallback, true);
+		});
 //
 //function test_enter()
 //        local t = {}

@@ -48,19 +48,15 @@ class StateMachine extends Stream
 	// ------------------------------------------------------------------------
 	// ------------------------------------------------------------------------
 
-	void addState(String stateName, [dynamic stateData])
+	void addState(String stateName, {dynamic from:null, Function enter:null, Function exit:null, State parent:null})
 	{
 		try
 		{
-			if(stateData == null)
-			{
-				stateData = {};
-			}
 			_states[stateName] = new State(name: stateName,
-											from: stateData["from"],
-											enter: stateData["enter"],
-											exit: stateData["exit"],
-											parent: _states[stateData["parent"]]);
+											from: from,
+											enter: enter,
+											exit: exit,
+											parent: _states[parent]);
 		}
 		catch(error)
 		{
@@ -126,7 +122,16 @@ class StateMachine extends Stream
 	
 	bool canChangeStateTo(String stateName)
 	{
-		return (stateName != _state && _states[stateName].from.indexOf(_state) != -1 || _states[stateName].from == "*");
+		bool notThereAlready = stateName != _state;
+		bool haveNoFromState = true;
+		State ourState = _states[stateName];
+		if(ourState.from != null && ourState.from is String)
+		{
+			bool noNegativeOne = ourState.from.indexOf(_state) != -1;
+			bool fromIsAny = ourState.from == "*";
+			haveNoFromState = (noNegativeOne || fromIsAny);
+		}
+		return (notThereAlready && haveNoFromState);
 	}
 	
 	List findPath(String stateFrom, String stateTo)
@@ -156,13 +161,13 @@ class StateMachine extends Stream
 		return [c,d];
 	}
 	
-	void changeState(String stateTo)
+	bool changeState(String stateTo)
 	{
 		// If there is no state that maches stateTo
 		if(_states.containsKey(stateTo) == false)
 		{
 			print("[StateMachine] id $id Cannot make transition: State $stateTo is not defined");
-			return;
+			return false;
 		}
 		
 		// If current state is not allowed to make this transition
@@ -174,7 +179,7 @@ class StateMachine extends Stream
 			outEvent.toState = stateTo;
 			outEvent.allowedStates = _states[stateTo].from;
 			_controller.add(outEvent);
-			return;
+			return false;
 		}
 		
 		// call exit and enter callbacks (if they exits)
@@ -207,7 +212,7 @@ class StateMachine extends Stream
 			StateMachineEvent enterCallbackEvent = new StateMachineEvent(StateMachineEvent.ENTER_CALLBACK);
 			enterCallbackEvent.toState = stateTo;
 			enterCallbackEvent.fromState = oldState;
-			if(_states[stateTo].root)
+			if(_states[stateTo].root != null)
 			{
 				parentStates = _states[stateTo].parents;
 				for(var k = path[1]-2; k>=0; k--)
@@ -220,10 +225,11 @@ class StateMachine extends Stream
 				}
 			}
 			
-			if(_states[_state].enter)
+			if(_states[_state].enter != null)
 			{
 				enterCallbackEvent.currentState = _state;
-				_states[_state].enter.call(null, enterCallbackEvent);
+				Function enterCallback = _states[_state].enter;
+				enterCallback(enterCallbackEvent);
 			}
 			print("[StateMachine] id $id State Changed to $_state");
 			
@@ -233,7 +239,7 @@ class StateMachine extends Stream
 			outEvent.toState = stateTo;
 			_controller.add(outEvent);
 		}
-		
+		return true;
 	}
 	
 	
