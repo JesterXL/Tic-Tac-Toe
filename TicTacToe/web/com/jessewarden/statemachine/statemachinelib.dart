@@ -1,7 +1,6 @@
 // ported from here https://github.com/cassiozen/AS3-State-Machine
 library statemachine;
 
-import 'dart:html';
 import 'dart:async';
 
 part "State.dart";

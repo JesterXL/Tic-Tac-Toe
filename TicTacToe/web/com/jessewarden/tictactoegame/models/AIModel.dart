@@ -48,11 +48,11 @@ class AIModel extends Stream
 		bool result = calculateNextMove();
 		if(result == true)
 		{
-		print("AI successfully made a move.");
+			print("AI successfully made a move.");
 		}
 		else
 		{
-		print("AI failed to make a move...");
+			print("AI failed to make a move...");
 		}
 		_controller.add(new AIModelEvent(AIModelEvent.AI_MOVE_COMPLETED));
 	}
@@ -73,6 +73,7 @@ class AIModel extends Stream
 		if(game.isBlank)
 		{
 			// always start in middle
+			print("AIModel taking correct first move.");
 			game.setXAt(1, 1);
 			return true;
 		}
@@ -83,16 +84,16 @@ class AIModel extends Stream
 			List firstRow       = d[0];
 			List secondRow      = d[1];
 			List thirdRow       = d[2];
-//			List firstCol       = [d[0][0], d[1][0], d[2][0]];
-//			List secondCol      = [d[0][1], d[1][1], d[2][1]];
-//			List thirdCol       = [d[0][2], d[1][2], d[2][2]];
-//			List downRight      = [d[0][0], d[1][1], d[2][2]];
-//			List downLeft       = [d[0][2], d[1][1], d[2][0]];
-//			List potentialWins  = [firstRow, secondRow, thirdRow,
-//									firstCol, secondCol, thirdCol,
-//									downRight, downLeft
-//									];
-//			
+			List firstCol       = [d[0][0], d[1][0], d[2][0]];
+			List secondCol      = [d[0][1], d[1][1], d[2][1]];
+			List thirdCol       = [d[0][2], d[1][2], d[2][2]];
+			List downRight      = [d[0][0], d[1][1], d[2][2]];
+			List downLeft       = [d[0][2], d[1][1], d[2][0]];
+			List potentialWins  = [firstRow, secondRow, thirdRow,
+									firstCol, secondCol, thirdCol,
+									downRight, downLeft
+									];
+			
 			int r_1_c_1 = firstRow[0];
 			int r_1_c_2 = firstRow[1];
 			int r_1_c_3 = firstRow[2];
@@ -117,10 +118,61 @@ class AIModel extends Stream
 				// then take it
 				Map<String, int> finishingMove = winningMoves[0];
 				game.setXAt(finishingMove["row"], finishingMove["col"]);
+				print("AIModel making a winning move.");
 				return true;
 			}
 			
-			// no winning moves, find next move instead. Let's check for edges...
+			// no winning moves, make sure we don't need to block...
+			List<int> placeToBlock = needToBlock(potentialWins);
+			if(placeToBlock != null)
+			{
+				// ghetto-lack-of-hash-map below
+				if(placeToBlock == firstRow)
+				{
+					return setXInBlankSpot(row: 0);
+				}
+				else if(placeToBlock == secondRow)
+				{
+					return setXInBlankSpot(row: 1);
+				}
+				else if(placeToBlock == thirdRow)
+				{
+					return setXInBlankSpot(row: 2);
+				}
+				else if(placeToBlock == firstCol)
+				{
+					return setXInBlankSpot(col: 0);
+				}
+				else if(placeToBlock == secondCol)
+				{
+					return setXInBlankSpot(col: 1);	
+				}
+				else if(placeToBlock == thirdCol)
+				{
+					return setXInBlankSpot(col: 2);	
+				}
+				else if(placeToBlock == downRight)
+				{
+					return setXInBlankSpot(targets: [
+														{"row": 0, "col": 0},
+														{"row": 1, "col": 1},
+														{"row": 2, "col": 2}
+													]);	
+				}
+				else if(placeToBlock == downLeft)
+				{
+					return setXInBlankSpot(targets: [
+														{"row": 0, "col": 2},
+														{"row": 1, "col": 1},
+														{"row": 2, "col": 0}
+													]);
+				}
+			}
+			
+			
+			
+			// find next move instead. Let's check for edges...
+			print("AIModel checking for edges...");
 			if(r_2_c_1 == O)
 			{
 				if(game.getCell(2, 2) == BLANK)
@@ -175,6 +227,7 @@ class AIModel extends Stream
 			}
 			
 			// no edges? Let's check for corners...
+			print("AIModel checking for corners...");
 			if(r_3_c_1 == O)
 			{
 				if(game.getCell(0, 2) == BLANK)
@@ -249,6 +302,7 @@ class AIModel extends Stream
 			}
 			
 			// made it this far? oy vey, my algorithm needs work, find an open spot
+			print("AIModel's strategy exhausted, picking a random spot...");
 			List<int> openSpot = findOpenSpot(game);
 			if(openSpot.length > 0)
 			{
@@ -256,6 +310,7 @@ class AIModel extends Stream
 				return true;
 			}
 			
+			print("AIModel couldn't even choose a random spot, fail.");
 			return false;
 			
 		}
@@ -310,6 +365,118 @@ class AIModel extends Stream
 			}
 		}
 		return winningMoves;
+	}
+	
+	bool listHasHole(List<int> list, int type)
+	{
+		int score = 0;
+		list.forEach((int item)
+		{
+			if(item == type)
+			{
+				score++;
+			}
+			if(item != type && item != Game.BLANK)
+			{
+				score--;
+			}
+		});
+		if(score == 2)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	List<int> needToBlock(List<List<int>> potentialWins)
+	{
+		List<int> listToBlock;
+		potentialWins.forEach((List<int> potentialWin)
+		{
+			if(listHasHole(potentialWin, Game.O) == true)
+			{
+				listToBlock = potentialWin;
+			}
+		});
+		return listToBlock;
+	}
+	
+	bool setXInBlankSpot({int row:null, int col:null, List<Map<String, int>> targets:null})
+	{
+		print("AIModel found a blank spot and preventing a win.");
+		print("row: $row, col: $col, targets: $targets");
+		Game game = gameModel.game;
+		if(row != null)
+		{
+			// find blank spot in row, set it
+			if(game.getCell(row, 0) == Game.BLANK)
+			{
+				game.setXAt(row, 0);
+				return true;
+			}
+			else if(game.getCell(row, 1) == Game.BLANK)
+			{
+				game.setXAt(row, 1);
+				return true;
+			}
+			else if(game.getCell(row, 2) == Game.BLANK)
+			{
+				game.setXAt(row, 2);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else if(col != null)
+		{
+			// find blank spot in row, set it
+			if(game.getCell(0, col) == Game.BLANK)
+			{
+				game.setXAt(0, col);
+				return true;
+			}
+			else if(game.getCell(1, col) == Game.BLANK)
+			{
+				game.setXAt(1, col);
+				return true;
+			}
+			else if(game.getCell(2, col) == Game.BLANK)
+			{
+				game.setXAt(2, col);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else if(targets != null)
+		{
+			Map<String, int> target1 = targets[0];
+			Map<String, int> target2 = targets[1];
+			Map<String, int> target3 = targets[2];
+			if(game.getCell(target1["row"], target1["col"]) == Game.BLANK)
+			{
+				game.setXAt(target1["row"], target1["col"]);
+				return true;
+			}
+			else if(game.getCell(target2["row"], target2["col"]) == Game.BLANK)
+			{
+				game.setXAt(target2["row"], target2["col"]);
+				return true;
+			}
+			else if(game.getCell(target3["row"], target3["col"]) == Game.BLANK)
+			{
+				game.setXAt(target3["row"], target3["col"]);
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	void storeMemento(Game game)

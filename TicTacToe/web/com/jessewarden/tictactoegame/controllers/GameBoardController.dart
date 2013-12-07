@@ -56,6 +56,7 @@ class GameBoardController
 		fsm.addState("playerTurn", enter: onEnterPlayerTurn, exit: onExitPlayerTurn, from: "*");
 		fsm.addState("youWin", enter: onEnterYouWin, exit: onExitYouWin, from: "*");
 		fsm.addState("youLose", enter: onEnterYouLose, exit: onExitYouLose, from: "*");
+		fsm.addState("tie", enter: onEnterTie, exit: onExitTie, from: "*");
 		fsm.initialState = "idle";
 		
 		statusText.showText(StatusText.AIS_TURN);
@@ -105,8 +106,7 @@ class GameBoardController
 		}
 		else if(gameModel.game.isFull)
 		{
-			// [jwarden 12.6.2013] TODO: make a tie... or not.
-			startGame();
+			fsm.changeState("tie");
 		}
 		else
 		{
@@ -183,6 +183,7 @@ class GameBoardController
 	
 	void startTimer(Function callback)
 	{
+		stopTimer();
 		const TIMEOUT = const Duration(seconds: 4);
 		waitTimer = new Timer(TIMEOUT, callback);
 	}
@@ -232,7 +233,6 @@ class GameBoardController
 	{
 		print("onEnterYouWin");
 		statusText.showText(StatusText.YOU_WIN);
-		stopTimer();
 		startTimer(startGame);
 	}
 	
@@ -245,7 +245,6 @@ class GameBoardController
 	{
 		print("onEnterYouLose");
 		statusText.showText(StatusText.YOU_LOSE);
-		stopTimer();
 		startTimer(startGame);
 	}
 	
@@ -253,6 +252,19 @@ class GameBoardController
 	{
 		print("onExitYouLose");
 	}
+	
+	void onEnterTie(StateMachineEvent event)
+	{
+		print("onEnterTie");
+		statusText.showText(StatusText.TIE);
+		startTimer(startGame);
+	}
+	
+	void onExitTie(StateMachineEvent event)
+	{
+		print("onExitYouLose");
+	}
+	
 	// --------------------------------------------------------------------------------------------------
 	// --------------------------------------------------------------------------------------------------
 		

@@ -52,11 +52,11 @@ class TestGame
 			expect(game.oIsWinner, false);
 		});
 		
-		test("no winning moves at beginning", ()
-		{
-			List<Map<String, int>> winningMoves = getWinningMoves(game);
-			expect(winningMoves.length, 0);
-		});
+//		test("no winning moves at beginning", ()
+//		{
+//			List<Map<String, int>> winningMoves = getWinningMoves(game);
+//			expect(winningMoves.length, 0);
+//		});
 		
 		
     });

@@ -1,5 +1,7 @@
 name: TicTacToe
-description: A sample web application
+author: Jesse Warden
+description: Tic Tac Toe game where computer is SUPPOSED to always win.
+homepage: http://jessewarden.com
 dependencies:
   browser: any
   unittest: any

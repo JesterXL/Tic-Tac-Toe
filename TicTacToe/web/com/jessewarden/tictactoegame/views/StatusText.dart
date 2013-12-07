@@ -7,6 +7,7 @@ class StatusText
 	static const String AIS_TURN = "AI's Turn";
 	static const String YOU_WIN = "You Win!";
 	static const String YOU_LOSE = "You Lose.";
+	static const String TIE = "Tie";
 	
 
 	ImageElement currentImage;
@@ -14,6 +15,7 @@ class StatusText
 	ImageElement aiTurnImage = new ImageElement();
 	ImageElement youWinImage= new ImageElement();
 	ImageElement youLoseImage = new ImageElement();
+	ImageElement tieImage = new ImageElement();
 	
 	CanvasElement canvas; // we give him his own for now; no time to implement CreateJS
 	Point drawPoint;
@@ -42,10 +44,13 @@ class StatusText
 		aiTurnImage.src = "images/text-ai-turn.png";
 		youWinImage.src = "images/text-you-win.png";
 		youLoseImage.src = "images/text-you-lose.png";
+		tieImage.src = "images/text-a-tie.png";
+		
 		loaders.add(yourTurnImage.onLoad.first);
 		loaders.add(aiTurnImage.onLoad.first);
 		loaders.add(youWinImage.onLoad.first);
 		loaders.add(youLoseImage.onLoad.first);
+		loaders.add(tieImage.onLoad.first);
 		return loaders;
 	}
 	
@@ -67,6 +72,10 @@ class StatusText
 			
 			case YOU_LOSE:
 				currentImage = youLoseImage;
+				break;
+			
+			case TIE:
+				currentImage = tieImage;
 				break;
 		}
 		redraw();
