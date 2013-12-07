@@ -9,7 +9,7 @@ GameBoardController boardController;
 void main()
 {
   print("main");
-  boardController = new GameBoardController(querySelector("#mainCanvas"));
+  boardController = new GameBoardController(querySelector("#mainCanvas"), querySelector("#textCanvas"));
   boardController.init();
 	
 	

@@ -7,6 +7,7 @@ class AIModel extends Stream
 	StreamSubscription _subscription;
 	GameModel gameModel;
 	List _memento;
+	Timer waitTimer;
 	
 	AIModel(GameModel gameModel)
 	{
@@ -22,8 +23,20 @@ class AIModel extends Stream
 	
 	void onStateChange(StateMachineEvent event)
 	{
+		if(waitTimer != null)
+		{
+			waitTimer.cancel();
+			waitTimer = null;
+		}
 		if(event.toState == "thinking")
 		{
+			const TIMEOUT = const Duration(seconds: 2);
+			waitTimer = new Timer(TIMEOUT, onReadyToGo);
+		}
+	}
+	
+	void onReadyToGo()
+	{
 //			try
 //			{
 //				calculateNextMove();
@@ -32,17 +45,16 @@ class AIModel extends Stream
 //			{
 //				print("AIModel failed to calculateNextMove, an error in the algorithm occured (imagine that...), error: $error");
 //			}
-			bool result = calculateNextMove();
-			if(result == true)
-			{
-				print("AI successfully made a move.");
-			}
-			else
-			{
-				print("AI failed to make a move...");
-			}
-			_controller.add(new AIModelEvent(AIModelEvent.AI_MOVE_COMPLETED));
+		bool result = calculateNextMove();
+		if(result == true)
+		{
+		print("AI successfully made a move.");
 		}
+		else
+		{
+		print("AI failed to make a move...");
+		}
+		_controller.add(new AIModelEvent(AIModelEvent.AI_MOVE_COMPLETED));
 	}
 	
 	void onAITurn()

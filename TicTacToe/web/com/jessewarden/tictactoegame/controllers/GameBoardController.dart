@@ -7,30 +7,37 @@ class GameBoardController
 	static const num MARGIN_TOP = 147;
 
 	CanvasElement canvas;
+	CanvasElement textCanvas;
 	CanvasRenderingContext2D context;
+	
 	PieceX xPiece;
 	PieceO oPiece;
 	TicTacToeBoard board;
+	StatusText statusText;
+	
 	GameModel gameModel;
 	AIModel aiModel;
 	StateMachine fsm;
 	StreamSubscription canvasClickSubscription;
 	
-	GameBoardController(CanvasElement	canvas)
+	GameBoardController(CanvasElement canvas, CanvasElement textCanvas)
 	{
-		this.canvas	=	canvas;
-		context	=	canvas.context2D;
+		this.canvas	= canvas;
+		context	= canvas.context2D;
+		this.textCanvas = textCanvas;
 	}
 	
 	void init()
 	{
 		board = new	TicTacToeBoard();
-		List loaders	=	[];
+		List loaders = [];
 		loaders.add(board.loadImage());
-		xPiece = new	PieceX();
+		xPiece = new PieceX();
 		loaders.add(xPiece.loadImage());
-		oPiece = new	PieceO();
+		oPiece = new PieceO();
 		loaders.add(oPiece.loadImage());
+		statusText = new StatusText(textCanvas);
+		loaders.addAll(statusText.loadImages());
 		
 		Future.wait(loaders)
 			.then((List	values)
@@ -50,6 +57,7 @@ class GameBoardController
 		fsm.addState("youLose", enter: onEnterYouLose, exit: onExitYouLose, from: "*");
 		fsm.initialState = "idle";
 		
+		statusText.showText(StatusText.AIS_TURN);
 		resetBoard();
 		
 		gameModel = new	GameModel();
@@ -145,6 +153,7 @@ class GameBoardController
 	void onEnterComputerTurn(StateMachineEvent event)
 	{
 		print("onEnterComputerTurn");
+		statusText.showText(StatusText.AIS_TURN);
 		aiModel.onAITurn();
 	}
 	
@@ -157,7 +166,8 @@ class GameBoardController
 	void onEnterPlayerTurn(StateMachineEvent event)
 	{
 		print("onEnterPlayerTurn");
-		canvasClickSubscription = canvas.onClick.listen(onCanvasClicked);
+		statusText.showText(StatusText.YOUR_TURN);
+		canvasClickSubscription = textCanvas.onClick.listen(onCanvasClicked);
 	}
 	
 	void onExitPlayerTurn(StateMachineEvent event)
@@ -170,6 +180,7 @@ class GameBoardController
 	void onEnterYouWin(StateMachineEvent event)
 	{
 		print("onEnterYouWin");
+		statusText.showText(StatusText.YOU_WIN);
 	}
 	
 	void onExitYouWin(StateMachineEvent event)
@@ -180,6 +191,7 @@ class GameBoardController
 	void onEnterYouLose(StateMachineEvent event)
 	{
 		print("onEnterYouLose");
+		statusText.showText(StatusText.YOU_LOSE);
 	}
 	
 	void onExitYouLose(StateMachineEvent event)
