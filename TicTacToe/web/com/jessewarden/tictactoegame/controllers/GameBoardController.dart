@@ -19,6 +19,7 @@ class GameBoardController
 	AIModel aiModel;
 	StateMachine fsm;
 	StreamSubscription canvasClickSubscription;
+	Timer waitTimer;
 	
 	GameBoardController(CanvasElement canvas, CanvasElement textCanvas)
 	{
@@ -70,6 +71,12 @@ class GameBoardController
 		fsm.changeState("computerTurn");
 	}
 	
+	void startGame()
+	{
+		gameModel.startGame();
+		fsm.changeState("computerTurn");
+	}
+	
 	void resetBoard()
 	{
 		context.clearRect(0, 0,	canvas.width, canvas.height);
@@ -83,27 +90,56 @@ class GameBoardController
 	
 	void onAIModelEvent(AIModelEvent event)
 	{
-		fsm.changeState("playerTurn");
+		changeTurns("playerTurn");
+	}
+	
+	void changeTurns(String who)
+	{
+		if(gameModel.game.xIsWinner)
+		{
+			fsm.changeState("youLose");
+		}
+		else if(gameModel.game.oIsWinner)
+		{
+			fsm.changeState("youWin");
+		}
+		else if(gameModel.game.isFull)
+		{
+			// [jwarden 12.6.2013] TODO: make a tie... or not.
+			startGame();
+		}
+		else
+		{
+			fsm.changeState(who);
+		}
+		
 	}
 	
 	void updateBoard(CellChangeEvent event)
 	{
-		assert(event.col != null);
-		assert(event.row != null);
-		assert(event.value != null);
-		num	XTarget	=	event.col * SIZE;
-		num	YTarget	=	event.row * SIZE;
-		XTarget += MARGIN_LEFT;
-		YTarget += MARGIN_TOP;
-		Point	p	=	new	Point(XTarget,	YTarget);
-		int	value	=	event.value;
-		if(value ==	Game.X)
+		if(event.type == CellChangeEvent.CELL_CHANGED)
 		{
-			xPiece.draw(context, p);
+			assert(event.col != null);
+			assert(event.row != null);
+			assert(event.value != null);
+			num	XTarget	=	event.col * SIZE;
+			num	YTarget	=	event.row * SIZE;
+			XTarget += MARGIN_LEFT;
+			YTarget += MARGIN_TOP;
+			Point	p	=	new	Point(XTarget,	YTarget);
+			int	value	=	event.value;
+			if(value ==	Game.X)
+			{
+				xPiece.draw(context, p);
+			}
+			else if(value == Game.O)
+			{
+				oPiece.draw(context, p);
+			}
 		}
-		else if(value == Game.O)
+		else
 		{
-			oPiece.draw(context, p);
+			resetBoard();
 		}
 	}
 	
@@ -132,8 +168,23 @@ class GameBoardController
 		{
 			gameModel.game.setOAt(row, col);
 			print("Player chose, setting state to computer turn.");
-			fsm.changeState("computerTurn");
+			changeTurns("computerTurn");
 		}
+	}
+	
+	void stopTimer()
+	{
+		if(waitTimer != null)
+		{
+			waitTimer.cancel();
+			waitTimer = null;
+		}
+	}
+	
+	void startTimer(Function callback)
+	{
+		const TIMEOUT = const Duration(seconds: 4);
+		waitTimer = new Timer(TIMEOUT, callback);
 	}
 	
 	// --------------------------------------------------------------------------------------------------
@@ -181,6 +232,8 @@ class GameBoardController
 	{
 		print("onEnterYouWin");
 		statusText.showText(StatusText.YOU_WIN);
+		stopTimer();
+		startTimer(startGame);
 	}
 	
 	void onExitYouWin(StateMachineEvent event)
@@ -192,6 +245,8 @@ class GameBoardController
 	{
 		print("onEnterYouLose");
 		statusText.showText(StatusText.YOU_LOSE);
+		stopTimer();
+		startTimer(startGame);
 	}
 	
 	void onExitYouLose(StateMachineEvent event)

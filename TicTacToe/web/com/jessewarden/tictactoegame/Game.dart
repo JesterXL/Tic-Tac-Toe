@@ -43,6 +43,17 @@ class Game
 		});
 	}
 	
+	bool get isFull
+	{
+		return _mdarray.every((List<int> row)
+		{
+			return row.every((int item)
+			{
+				return item != BLANK;
+			});
+		});
+	}
+	
 	bool get xIsWinner
 	{
 		dynamic matchResult = getMatchResults();
